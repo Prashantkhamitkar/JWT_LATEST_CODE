@@ -57,6 +57,7 @@ public class AuthController {
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
+        
         return ResponseEntity.ok(new JwtResponse(
                 jwt,
                 refreshToken.getToken(),

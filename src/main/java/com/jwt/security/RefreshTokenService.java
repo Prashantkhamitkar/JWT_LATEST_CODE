@@ -28,13 +28,19 @@ public Optional<RefreshToken> findByToken(String Token){
 	return refreshTokenRepository.findByToken(Token);
 }
 
+@Transactional
 public RefreshToken createRefreshToken(Long userId) {
-	RefreshToken refreshToken=new RefreshToken();
-	refreshToken.setUser(userRepository.findById(userId).get());
-	refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
-	refreshToken.setToken(UUID.randomUUID().toString());
-	refreshToken=refreshTokenRepository.save(refreshToken);
-	return refreshToken;
+    // First delete any existing token for this user
+	
+    deleteByUserId(userId);
+    
+    RefreshToken refreshToken = new RefreshToken();
+    refreshToken.setUser(userRepository.findById(userId).orElseThrow(
+        () -> new RuntimeException("User not found")));
+    refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+    refreshToken.setToken(UUID.randomUUID().toString());
+    
+    return refreshTokenRepository.save(refreshToken);
 }
 
 public RefreshToken verifyExpiration (RefreshToken token) {
@@ -47,7 +53,7 @@ public RefreshToken verifyExpiration (RefreshToken token) {
 
 @Transactional
 public int deleteByUserId(Long UserId) {
-	return refreshTokenRepository.deleteByUser(userRepository.findById(UserId).get());
+	return refreshTokenRepository.deleteByUserId(UserId);
 }
 
 	    
